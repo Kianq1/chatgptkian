@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat GPT Website</title>
+  </head>
+  <body>
+    <header>
+      <h1>Chat GPT Website</h1>
+    </header>
+    <main>
+      <div id="chat-container"></div>
+      <form id="message-form">
+        <input type="text" id="message-input" placeholder="Enter your message...">
+        <button type="submit" id="send-button">Send</button>
+      </form>
+    </main>
+    <footer>
+      <p>© 2021 Chat GPT Website</p>
+    </footer>
+    <script src="script.js"></script>
+  </body>
+</html>
+
+JavaScript:
+
+const chatContainer = document.getElementById('chat-container');
+const messageForm = document.getElementById('message-form');
+const messageInput = document.getElementById('message-input');
+const sendButton = document.getElementById('send-button');
+
+function displayMessage(message) {
+  const messageElement = document.createElement('div');
+  messageElement.classList.add('message');
+  messageElement.textContent = message;
+  chatContainer.appendChild(messageElement);
+}
+
+async function generateResponse(message) {
+  const response = await fetch('https://api.openai.com/v1/engines/davinci-codex/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer YOUR_API_KEY'
+    },
+    body: JSON.stringify({
+      prompt: message,
+      max_tokens: 60,
+      n: 1,
+      stop: ['\n']
+    })
+  });
+  const data = await response.json();
+  const text = data.choices[0].text.trim();
+  return text;
+}
+
+function sendMessage() {
+  const message = messageInput.value;
+  displayMessage(`You: ${message}`);
+  messageInput.value = '';
+  generateResponse(message)
+    .then(response => {
+      displayMessage(`Bot: ${response}`);
+    })
+    .catch(error => {
+      console.error(error);
+      displayMessage(`Bot: Sorry, I couldn't understand your message.`);
+    });
+}
+
+messageForm.addEventListener('submit', event => {
+  event.preventDefault();
+  sendMessage();
+});
+
+sendButton.addEventListener('click', event => {
+  event.preventDefault();
+  sendMessage();
+});
